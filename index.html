@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 1</title>
+    <!--- RD --->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
+    <!--- Keith --->
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Raleway:400,700" rel="stylesheet">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+    <!--- KL --->
+    <!--     Picture Citation
+    https://www.wallpaperflare.com/the-avengers-silhouette-hawkeye-one-person-white-color-wallpaper-phhsi
+    https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Marvel_Logo.svg/2880px-Marvel_Logo.svg.png -->
+    <style>
+        .gridlines .domain {
+            display: none;
+        }
+
+        .x.gridlines line {
+            stroke: #D3D3D3;
+            opacity: 0
+        }
+
+        .y.gridlines line {
+            stroke: #D3D3D3;
+            opacity: 0
+        }
+    </style>
+</head>
+
+<body>
+    <h1>
+        Project 1
+    </h1>
+    <h3>Name</h3>
+    Kefan Lu, Soyee Park, Ruidi Peng, Hao Zhuo<br>
+
+    
+    
+    <h2 style='margin-top:50px;'>1 Number of Characters on Its First Appearance by Year</h2>
+    <svg id="lineplot" height="500" width="1000" style="border:1px solid grey;">
+        <defs>
+            <pattern id="imgpattern1" x="0" y="0" width="1" height="1">
+                <image width="720" height="290"
+                    href="logo1.png" />
+            </pattern>
+        </defs>
+        <path fill="url(#imgpattern1)" fill-opacity="0.3" stroke="none" d="M 180,70 L 900,70 900,360 180,360Z" />
+    </svg>
+
+    <script>
+
+      // Set up the chart area and incorporate margins
+      let svg = d3.select("svg#lineplot");
+      let width = svg.attr("width");
+      let height = svg.attr("height");
+      let margin = { top: 10, right: 10, bottom: 100, left: 100 };
+      let chartWidth = width - margin.left - margin.right;
+      let chartHeight = height - margin.top - margin.bottom;
+
+      let annotations = svg.append("g").attr("id", "annotations");
+      let chartArea = svg.append("g").attr("id", "points")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      // Import CSV data
+      d3.csv("firstAppearance.csv", d3.autoType)
+        .then((data) => {
+          // Scales
+          const countExtent = d3.extent(data, d => d['Count']);
+          const countScale = d3.scaleLinear().domain([countExtent[0] - 10, countExtent[1] + 10]).range([chartHeight, 0]);
+
+          const yearExtent = d3.extent(data, d => d['Year']);
+          const yearScale = d3.scaleLinear().domain(yearExtent).range([0, chartWidth]);
+
+          // Y axis
+          let leftAxis = d3.axisLeft(countScale)
+          let leftGridlines = d3.axisLeft(countScale)
+            .tickSize(-chartWidth - 10)
+            .tickFormat("")
+          annotations.append("g")
+            .attr("class", "y axis")
+            .attr("transform", `translate(${margin.left - 30},${margin.top})`)
+            .style("font-weight", "bold")
+            .call(leftAxis)
+          annotations.append("g")
+            .attr("class", "y gridlines")
+            .attr("transform", `translate(${margin.left - 10},${margin.top})`)
+            .call(leftGridlines);
+          annotations.append("text") // y axis lable
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr("transform", `translate(${margin.left - 20},${margin.top + chartHeight / 2}) translate(-45, 0) rotate(-90)`)
+            .style("font-weight", "bold")
+            .text("Number of Characters on Their First Appearance");
+
+          // X axis
+          let bottomAxis = d3.axisBottom(yearScale).tickFormat(d3.format("d"))
+          let bottomGridlines = d3.axisBottom(yearScale)
+            .tickSize(-chartHeight - 10)
+            .tickFormat("")
+          annotations.append("g")
+            .attr("class", "x axis")
+            .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
+            .style("font-weight", "bold")
+            .call(bottomAxis);
+          annotations.append("g")
+            .attr("class", "x gridlines")
+            .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
+            .call(bottomGridlines);
+          annotations.append("text") // label
+            .attr("class", "x label")
+            .attr("text-anchor", "middle")
+            .attr("transform", `translate(${margin.left + chartWidth / 2},${chartHeight + margin.top + 65})`)
+            .style("font-weight", "bold")
+            .attr("y", -20)
+            .text("Year");
+
+          // Draw the line
+          var lineGen = d3.line()
+            .x(d => yearScale(d['Year']))
+            .y(d => countScale(d['Count']))
+            .curve(d3.curveMonotoneX);
+
+          chartArea.append("path")
+            .datum(data)
+            .attr("class", "line")
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 3)
+            .attr("d", lineGen)
+            .raise();
+
+          // Add circles
+          chartArea.selectAll("circle").data(data)
+            .join("circle")
+            .attr("r", 3)
+            .attr("fill", "navy")
+            .attr("cx", d => yearScale(d['Year']))
+            .attr("cy", d => countScale(d['Count']));
+
+          // end of .then()
+            });
+    </script>
+
+    
+    
+    
+    
+    <h2 style='margin-top:50px;'>2 World Gross of Different Marvel Series by Year</h2>
+    <svg id="p1-1" height=500 width=1000 style="border:1px solid grey;">
+        <defs>
+            <pattern id="imgpattern2" x="0" y="0" width="1" height="1">
+                <image width="195" height="277" href="marvel2.png" />
+            </pattern>
+        </defs>
+        <path fill="url(#imgpattern2)" fill-opacity="0.3" stroke="none" d="M 40,170 L 235,170 235,447 40,447Z" />
+    </svg>
+    <script>
+        // set canvas from lecture code
+        let svg2 = d3.select("svg#p1-1");
+        let width2 = svg2.attr("width");
+        let height2 = svg2.attr("height");
+        let margin2 = { top: 50, right: 250, bottom: 70, left: 70 };
+        let chartWidth2 = width2 - margin2.left - margin2.right;
+        let chartHeight2 = height2 - margin2.top - margin2.bottom;
+
+        let annotations2 = svg2.append("g").attr("id", "annotations");
+        let chartArea2 = svg2.append("g").attr("id", "points")
+            .attr("transform", `translate(${margin2.left},${margin2.top})`);
+
+        d3.csv('data/m-vs-dc.csv', d3.autoType).then(
+            (data) => {
+                console.log(data);
+                let releaseExtent = d3.extent(data, d => d['Release'])
+                let releaseScale = d3.scaleLinear().domain([releaseExtent[0], releaseExtent[1]]).range([0, chartWidth2])
+
+                // create scale
+                // if use series 1 2 3 4rather than real name
+                let seriesExtent = d3.extent(data, d => d['Series'])
+                let seriesScale = d3.scaleLinear().domain([seriesExtent[0], seriesExtent[1]]).range([0, chartHeight2])
+                // https://bl.ocks.org/mbostock/3259783
+                // https://stackoverflow.com/questions/22504374/array-to-map-ordinal-y-axis-d3
+                // https://stackoverflow.com/questions/41941442/d3js-v4-scaleordinal-does-not-have-the-rangepoints/41945740
+                let seriesExtent_Ordinal = ['Iron Man', 'Captain America', 'Thor', 'Spider Man', 'Avenger'];
+                let seriesScale_Ordinal = d3.scalePoint().domain(seriesExtent_Ordinal).range([0, chartHeight2]);
+
+                let grossExtent = d3.extent(data, d => d['Gross_Worldwide'])
+                console.log("grossExtent: " + grossExtent);
+                let grossScale = d3.scaleLinear().domain(grossExtent).range([6, 60])
+
+                //https://stackoverflow.com/questions/21787200/d3-mapping-4-colors-to-4-numeric-ranges-to-look-a-bit-like-a-very-basic-heatmap
+                // https://github.com/d3/d3-scale#threshold-scales
+                // https://observablehq.com/@d3/threshold-choropleth
+                let grossScale_color = d3.scaleThreshold().domain([300000000, 500000000, 1000000000, 2000000000, 3000000000]).range(d3.schemeBlues[6])
+
+
+                // color legend
+                // http://using-d3js.com/04_08_legends.html
+                // https://d3-legend.susielu.com/
+                let colorLegend = d3.legendColor()
+                    .scale(grossScale_color)
+                    .labels(d3.legendHelpers.thresholdLabels)
+                    .labelFormat(d3.format(".0s"))
+                    .title("World Gross ($)")
+                annotations2.append("g") // axis 
+                    .attr("class", "color_axis")
+                    .attr("transform", `translate(${margin2.left + chartWidth2 + 70},${margin2.top})`)
+                    .call(colorLegend);
+
+
+                // rect size legend
+                annotations2.append("g") // axis 
+                    .attr("class", "circle_legend")
+                    .attr("transform", `translate(${margin2.left + chartWidth2 - 30},${margin2.top + 100})`)
+                    .selectAll("rect")
+                    .data([300000000, 500000000, 1000000000, 2000000000, 3000000000])
+                    .join("rect")
+                    .attr("x", 100)
+                    .attr("y", function (d, i) { return 100 + i * (0.5 * grossScale(d) + 5) })
+                    .attr("width", d => grossScale(d))
+                    .attr("height", d => grossScale(d))
+                    .style('fill', d => grossScale_color(d))
+                annotations2.append('g')
+                    .attr("class", "circle_legend")
+                    .attr("transform", `translate(${margin2.left + chartWidth2 + 40},${margin2.top + 105})`)
+                    .selectAll("text")
+                    .data([300000000, 500000000, 1000000000, 2000000000, 3000000000])
+                    .join("text")
+                    .attr("x", 100)
+                    .attr("y", function (d, i) { return 100 + i * (0.6 * grossScale(d) + 5) })
+                    .text(function (d) { return d3.format(".0s")(d) })
+                    .attr("text-anchor", "left")
+                    .style("alignment-baseline", "middle")
+
+                // x axis 
+                let bottomAxis = d3.axisBottom(releaseScale)
+                    .tickFormat(d3.format("~f"))
+                    .ticks(8)
+                let bottomGridlines = d3.axisBottom(releaseScale)
+                    .tickSize(-chartHeight2 - 10)
+                    .tickFormat("")
+                    .ticks(8)
+
+                annotations2.append("g") // axis 
+                    .attr("class", "x_axis")
+                    .attr("transform", `translate(${margin2.left},${chartHeight2 + margin2.top + 34})`)
+                    .style("font-weight", "bold")
+                    .call(bottomAxis);
+                annotations2.append("g") // gridlines
+                    .attr("class", "x gridlines")
+                    .attr("transform", `translate(${margin2.left},${chartHeight2 + margin2.top + 20})`)
+                    .call(bottomGridlines)
+
+                annotations2.append("text") // label
+                    .attr("class", "x label")
+                    .attr("text-anchor", "middle")
+                    .attr("transform", `translate(${margin2.left + chartWidth2 / 2},${chartHeight2 + margin2.top + 65})`)
+                    .style("font-weight", "bold")
+                    .text("Year");
+
+
+                // Y axis
+                let leftAxis = d3.axisLeft(seriesScale_Ordinal)
+                annotations2.append("g") // axis
+                    .attr("class", "y_axis")
+                    .attr("transform", `translate(${margin2.left - 20},${margin2.top})`)
+                    .call(leftAxis)
+                    .selectAll("text") // axis annotation
+                    .style("text-anchor", "middle")
+                    .attr("transform", 'translate(40 0)')
+                    .style("font-weight", "bold")
+                    .attr("transform", " translate(-10 -10) rotate(-80)");
+                let leftGridlines = d3.axisLeft(seriesScale_Ordinal)
+                    .tickSize(-chartWidth2 - 10)
+                    .tickFormat("")
+                annotations2.append("g")
+                    .attr("class", "y gridlines")
+                    .attr("transform", `translate(${margin2.left - 10},${margin2.top})`)
+                    .call(leftGridlines);
+                annotations2.append("text") // y axis lable
+                    .attr("class", "y label")
+                    .attr("text-anchor", "middle")
+                    .attr("transform", `translate(${margin2.left},${margin2.top + chartHeight2 / 2}) translate(-45, 0) rotate(-90)`)
+                    .style("font-weight", "bold")
+                    .text("Series Name");
+
+
+                data = data.filter(d => d['Series'] != null)
+                console.log(data);
+
+                chartArea2.selectAll("rect")
+                    .data(data)
+                    .join("rect")
+                    .attr("x", d => releaseScale(d['Release']) - grossScale(d['Gross_Worldwide']) / 2)
+                    .attr("y", d => seriesScale(d['Series']) - grossScale(d['Gross_Worldwide']) / 2)
+                    .attr("width", d => grossScale(d['Gross_Worldwide']))
+                    .attr("height", d => grossScale(d['Gross_Worldwide']))
+                    .style('fill', d => grossScale_color(d['Gross_Worldwide']))
+
+            }, (error) => {
+                // console.log('error', error);
+            });
+    </script>
+        
+    
+    
+    
+    
+    <h2 style='margin-top:50px;'>3 Gender Ratio of New Characters by 5-Year</h2>
+    <svg id="c" height="500" width="1000" style="border:1px solid grey;">
+        <defs>
+            <pattern id="imgpattern3" x="0" y="0" width="1" height="1">
+                <image width="640" height="360" href="marvel1.jpg" />
+            </pattern>
+        </defs>
+        <path fill="url(#imgpattern3)" fill-opacity="0.3" stroke="none" d="M 350,40 L 990,40 990,400 350,400Z" />
+    </svg>
+    <script>
+        const svg3 = d3.select("svg#c");
+        const width3 = svg3.attr("width");
+        const height3 = svg3.attr("height");
+        const margin3 = { top: 10, right: 10, bottom: 100, left: 100 };
+        const chartWidth3 = width3 - margin3.left - margin3.right;
+        const chartHeight3 = height3 - margin3.top - margin3.bottom;
+
+        let annotations3 = svg3.append("g").attr("id", "annotations");
+        let chartArea3 = svg3.append("g").attr("id", "points")
+            .attr("transform", `translate(${margin3.left},${margin3.top})`);
+
+        d3.csv("genderPer5.csv", d3.autoType).then((data) => {
+            console.log(data)
+            const ratioExtent = d3.extent(data, d => d['Ratio1']);
+            const ratioScale = d3.scaleLinear().domain(ratioExtent).range([chartHeight3, 50]);
+            const fiveExtent = d3.extent(data, d => d['Year1']);
+            const fiveScale = d3.scaleLinear().domain(fiveExtent).range([10, chartWidth3]);
+            console.log(ratioExtent)
+            // Y axis
+            let leftAxis3 = d3.axisLeft(ratioScale)
+            let leftGridlines3 = d3.axisLeft(ratioScale)
+                .tickSize(-chartWidth3 - 10)
+                .tickFormat("")
+            annotations3.append("g")
+                .attr("class", "y axis")
+                .attr("transform", `translate(${margin3.left - 30},${margin3.top + 20})`)
+                .style("font-weight", "bold")
+                .call(leftAxis3)
+            annotations3.append("text")
+                .attr("class", "y label")
+                .attr("text-anchor", "middle")
+                .attr("transform", `translate(${margin3.left - 20},${margin3.top + chartHeight3 / 1.8}) translate(-45, 0) rotate(-90)`)
+                .style("font-weight", "bold")
+                .text("Ratio of Male/Female Character Making First Appearance");
+
+            // X axis
+            let bottomAxis3 = d3.axisBottom(fiveScale).tickFormat(d3.format("d"))
+            let bottomGridlines3 = d3.axisBottom(fiveScale)
+                .tickSize(-chartHeight3 - 10)
+                .tickFormat("")
+            annotations3.append("g")
+                .attr("class", "x axis")
+                .attr("transform", `translate(${margin3.left - 20},${chartHeight3 + margin3.top + 40})`)
+                .style("font-weight", "bold")
+                .call(bottomAxis3);
+            annotations3.append("text") // label
+                .attr("class", "x label")
+                .attr("text-anchor", "middle")
+                .attr("transform", `translate(${margin3.left + chartWidth3 / 2},${chartHeight3 + margin3.top + 95})`)
+                .style("font-weight", "bold")
+                .attr("y", -20)
+                .text("Year");
+
+            data.forEach((d, i) => {
+                chartArea3.append("line")
+                    .attr("x1", fiveScale(d.Year1) - 20)
+                    .attr("x2", fiveScale(d.Year1) - 20)
+                    .attr("y1", height3 - 100)
+                    .attr("y2", ratioScale(d.Ratio1))
+                    .attr("transform", `translate(${margin3.left - 100},${margin3.top + 20})`)
+                    .style("stroke", "steelblue")
+                    .style("stroke-width", 20);
+            });
+        });
+    </script>
+
+</body>
+
+</html>
